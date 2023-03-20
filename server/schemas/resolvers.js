@@ -32,6 +32,26 @@ const resolvers = {
 
             return { token, user};
         },
-        
-    }
+        saveBook: async (parent, { bookId, authors, description, title, image, link }, context) => {
+            const updatedUser = await User.findOneAndUpdate(
+                {_id: context.user._id },
+                { $addToSet: {savedBooks: {bookId, authors, description, title, image, link} } },
+                { new: true, runValidators: true }
+            );
+            return updatedUser;
+        },
+        deleteBook: async (parent, { bookId }, context) => {
+            const updatedUser = await User.findOneAndUpdate(
+                { _id: context.user._id },
+                { $pull: { savedBooks: { bookId} } },
+                { new: true }
+            );
+            if (!updatedUser) {
+                throw new AuthenticationError('No user with this id');
+            }
+            return updatedUser;
+        }
+    },
 }
+
+module.exports = resolvers;
